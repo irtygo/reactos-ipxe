@@ -28,7 +28,7 @@ jobs:
         run: sudo apt install perl liblzma-dev mtools genisoimage syslinux isolinux
 
       - name: Build it
-        run: make -j$(nproc) -C src
+        run: cd src && make -j$(nproc) EMBED=../ros.ipxe ; cd ..
 
       - name: Delete clutter
         run: |
