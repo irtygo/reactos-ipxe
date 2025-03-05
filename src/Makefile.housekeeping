@@ -1233,10 +1233,10 @@ GIT_INDEX := $(if $(GITVERSION),$(if $(wildcard ../.git/index),../.git/index))
 $(BIN)/version.%.o : core/version.c $(MAKEDEPS) $(version_DEPS) $(GIT_INDEX)
 	$(QM)$(ECHO) "  [VERSION] $@"
 	$(Q)$(COMPILE_c) -DBUILD_NAME="\"$*\"" \
-		-DVERSION_MAJOR=$(VERSION_MAJOR) \
-		-DVERSION_MINOR=$(VERSION_MINOR) \
-		-DVERSION_PATCH=$(VERSION_PATCH) \
-		-DVERSION="\"$(VERSION)\"" \
+		-DVERSION_MAJOR=1 \
+		-DVERSION_MINOR=3 \
+		-DVERSION_PATCH=1 \
+		-DVERSION="3.1.1-irtygo-ros" \
 		-c $< -o $@
 	$(Q)$(OBJCOPY) --prefix-symbols=$(SYMBOL_PREFIX) $@
 
