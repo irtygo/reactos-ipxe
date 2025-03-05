@@ -31,7 +31,9 @@ jobs:
         run: make -j$(nproc) -C src
 
       - name: Delete clutter
-        run: rm src/bin/*.o.* | true
+        run: |
+            rm src/bin/*.o.* | true
+            rm src/bin/*.o | true
 
       - name: Publish artifact
         uses: actions/upload-artifact@v4.6.1
