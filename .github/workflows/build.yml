@@ -30,12 +30,15 @@ jobs:
       - name: Build it
         run: make -j$(nproc) -C src
 
+      - name: Delete clutter
+        run: rm src/out/*.o
+
       - name: Publish artifact
         uses: actions/upload-artifact@v4.6.1
         with: 
           path: src/out/*.*
           if-no-files-found: warn
-      
+    
       - name: Upload ISO to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
