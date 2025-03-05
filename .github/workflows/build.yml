@@ -30,17 +30,16 @@ jobs:
       - name: Build it
         run: make -j$(nproc) -C src
 
-      - name: Fetch deps and iso
-        run: |
-              mkdir -p out
-              cp src/bin/*.img out
-              cp src/bin/*.kpxe out
-              cp src/bin/*.iso out
+      - name: Publish artifact
+        uses: actions/upload-artifact@v4.6.1
+        with: 
+          path: src/out/*.*
+          if-no-files-found: warn
       
       - name: Upload ISO to GitHub Releases
         uses: softprops/action-gh-release@v1
         with:
-          files: "out/*.*"  # This grabs all output files
+          files: "src/bin/*.*"  # This grabs all output files
           tag_name: latest
           token: ${{ secrets.GITHUB_TOKEN }}
           overwrite: true 
