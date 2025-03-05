@@ -53,10 +53,10 @@ jobs:
                            libgcc-s1:i386 libc6-dbg:i386
       - name: Build (BIOS)
         run: |
-          make -j 4 -C src
+          make -j 4 -C src EMBED=../ros.ipxe
       - name: Build (Everything)
         run: |
-          make -j 4 -C src everything
+          make -j 4 -C src everything EMBED=../ros.ipxe
       - name: Test
         run: |
           valgrind ./src/bin-i386-linux/tests.linux
@@ -89,7 +89,8 @@ jobs:
           make -j 4 -C src CROSS=arm-none-eabi- \
                bin-arm32-efi/intel.efi \
                bin-arm32-efi/intel.usb \
-               bin-arm32-efi/intel.iso
+               bin-arm32-efi/intel.iso \
+               EMBED=../ros.ipxe
 
   arm64:
     name: ARM64
@@ -118,4 +119,5 @@ jobs:
           make -j 4 -C src CROSS=aarch64-linux-gnu- \
                bin-arm64-efi/ipxe.efi \
                bin-arm64-efi/ipxe.usb \
-               bin-arm64-efi/ipxe.iso
+               bin-arm64-efi/ipxe.iso \
+               EMBED=../ros.ipxe
