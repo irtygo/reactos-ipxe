@@ -1,0 +1,14 @@
+set menu-timeout 5000
+
+:start
+menu Choose an OS
+item -key l livecd
+item -key b bootcd
+
+:livecd
+kernel http://boot.netboot.xyz/memdisk vmalloc=512M iso
+initrd https://github.com/irtygo/reactos-for-ipxe-iso/releases/download/latest/reactos_livecd_latest.iso
+boot
+
+
+:bootcd
