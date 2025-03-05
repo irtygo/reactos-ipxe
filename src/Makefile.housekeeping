@@ -1236,7 +1236,7 @@ $(BIN)/version.%.o : core/version.c $(MAKEDEPS) $(version_DEPS) $(GIT_INDEX)
 		-DVERSION_MAJOR=1 \
 		-DVERSION_MINOR=3 \
 		-DVERSION_PATCH=1 \
-		-DVERSION="3.1.1-irtygo-ros" \
+		-DVERSION="\"3.1.1-irtygo-ros\"" \
 		-c $< -o $@
 	$(Q)$(OBJCOPY) --prefix-symbols=$(SYMBOL_PREFIX) $@
 
