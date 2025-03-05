@@ -32,12 +32,12 @@ jobs:
       - name: Build it
         run: make -j$(nproc) -C src
 
-      # Give ourselves permission to run this stuff
-      - name: Grant Permission
-        run: chmod +x ./fetch_and_commit.sh
-
       - name: Fetch deps and iso
-        run: ./
+        run: |
+              mkdir -p out
+              cp src/bin/*.img out
+              cp src/bin/*.kpxe out
+              cp src/bin/*.iso out
       
       - name: Upload ISO to GitHub Releases
         uses: softprops/action-gh-release@v1
