@@ -6,13 +6,16 @@ set menu-timeout 5000
 menu Choose an OS
 item --key l livecd
 item --key b bootcd
+choose --timeout ${menu-timeout} --default ${menu-default} selected || goto cancel
+set menu-timeout 0
+goto ${selected}
 
 :livecd
-kernel http://boot.netboot.xyz/memdisk raw iso
+kernel https://github.com/irtygo/freeldr-ipxe/releases/download/latest/freeldr.sys
 initrd https://github.com/irtygo/reactos-for-ipxe-iso/releases/download/latest/reactos_livecd_latest.iso
 boot
 
 :bootcd
-kernel http://boot.netboot.xyz/memdisk raw iso
+kernel https://github.com/irtygo/freeldr-ipxe/releases/download/latest/freeldr.sys
 initrd https://github.com/irtygo/reactos-for-ipxe-iso/releases/download/latest/reactos_bootcd_latest.iso
 boot
