@@ -1,121 +1,50 @@
-name: Build
+name: AutoBuild
 
-on: push
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+  
+  schedule:
+    - cron: '0 0 * * *'  # Runs at 12:00 AM UTC every day
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
 
-  cache:
-    name: Cache
-    runs-on: ubuntu-22.04
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Cache permissions
-        run: |
-          sudo chown $(id -un) /var/cache/apt/archives
-      - name: Cache packages
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives/*.deb
-          key: apt-cache-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: |
-            apt-cache-
-      - name: Download packages
-        run: |
-          sudo apt update
-          sudo apt install -y -d -o Acquire::Retries=50 \
-                           mtools syslinux isolinux \
-                           libc6-dev-i386 valgrind \
-                           gcc-arm-none-eabi gcc-aarch64-linux-gnu
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
 
-  x86:
-    name: x86
-    runs-on: ubuntu-22.04
-    needs: cache
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Cache permissions
-        run: |
-          sudo chown $(id -un) /var/cache/apt/archives
-      - name: Cache packages
-        uses: actions/cache/restore@v4
-        with:
-          path: /var/cache/apt/archives/*.deb
-          key: apt-cache-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Install packages
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt update
-          sudo apt install -y -o Acquire::Retries=50 \
-                           mtools syslinux isolinux \
-                           libc6-dev-i386 valgrind \
-                           libgcc-s1:i386 libc6-dbg:i386
-      - name: Build (BIOS)
-        run: |
-          make -j 4 -C src
-      - name: Build (Everything)
-        run: |
-          make -j 4 -C src everything
-      - name: Test
-        run: |
-          valgrind ./src/bin-i386-linux/tests.linux
-          valgrind ./src/bin-x86_64-linux/tests.linux
+      - name: Get depenancies
+        run: sudo apt install perl liblzma-dev mtools genisoimage syslinux isolinux
 
-  arm32:
-    name: ARM32
-    runs-on: ubuntu-22.04
-    needs: cache
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Cache permissions
-        run: |
-          sudo chown $(id -un) /var/cache/apt/archives
-      - name: Cache packages
-        uses: actions/cache/restore@v4
-        with:
-          path: /var/cache/apt/archives/*.deb
-          key: apt-cache-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Install packages
-        run: |
-          sudo apt update
-          sudo apt install -y -o Acquire::Retries=50 \
-                           mtools syslinux isolinux gcc-arm-none-eabi
-      - name: Build
-        run: |
-          make -j 4 -C src CROSS=arm-none-eabi- \
-               bin-arm32-efi/intel.efi \
-               bin-arm32-efi/intel.usb \
-               bin-arm32-efi/intel.iso
+      - name: Build it
+        run: cd src && make -j$(nproc) EMBED=../ros.ipxe ; cd ..
 
-  arm64:
-    name: ARM64
-    runs-on: ubuntu-22.04
-    needs: cache
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - name: Delete clutter
+        run: |
+            rm src/bin/*.o.* | true
+            rm src/bin/*.o | true
+
+      - name: Publish artifact
+        uses: actions/upload-artifact@v4.6.1
+        with: 
+          path: src/bin/*.*
+          if-no-files-found: warn
+    
+      - name: Upload ISO to GitHub Releases
+        uses: softprops/action-gh-release@v1
         with:
-          fetch-depth: 0
-      - name: Cache permissions
-        run: |
-          sudo chown $(id -un) /var/cache/apt/archives
-      - name: Cache packages
-        uses: actions/cache/restore@v4
-        with:
-          path: /var/cache/apt/archives/*.deb
-          key: apt-cache-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Install packages
-        run: |
-          sudo apt update
-          sudo apt install -y -o Acquire::Retries=50 \
-                           mtools syslinux isolinux gcc-aarch64-linux-gnu
-      - name: Build
-        run: |
-          make -j 4 -C src CROSS=aarch64-linux-gnu- \
-               bin-arm64-efi/ipxe.efi \
-               bin-arm64-efi/ipxe.usb \
-               bin-arm64-efi/ipxe.iso
+          files: "src/bin/*.*"  # This grabs all output files
+          tag_name: latest
+          token: ${{ secrets.GITHUB_TOKEN }}
+          overwrite: true 
